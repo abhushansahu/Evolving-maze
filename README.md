@@ -11,11 +11,15 @@ Simple browser game for the 10x10 wall-placement puzzle with:
 ## Project links
 
 - GitHub repo: [Evolving-maze](https://github.com/abhushansahu/Evolving-maze)
-- Live page: [abhushansahu.github.io/puzzle_g_research](https://abhushansahu.github.io/puzzle_g_research/)
+- Live page: [abhushansahu.github.io/Evolving-maze](https://abhushansahu.github.io/Evolving-maze/)
 
 ## Run
 
 Open [`index.html`](index.html) in a browser.
+
+For local serving (recommended), run:
+
+`python3 -m http.server 5500`
 
 ## Controls
 

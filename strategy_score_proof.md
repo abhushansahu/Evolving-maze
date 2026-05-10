@@ -3,7 +3,7 @@
 ## Project Links
 
 - GitHub repo: [Evolving-maze](https://github.com/abhushansahu/Evolving-maze)
-- Live page: [abhushansahu.github.io/puzzle_g_research](https://abhushansahu.github.io/puzzle_g_research/)
+- Live page: [abhushansahu.github.io/Evolving-maze](https://abhushansahu.github.io/Evolving-maze/)
 
 ## Problem Statement
 
