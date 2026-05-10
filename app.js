@@ -11,6 +11,7 @@ const elements = {
   turnLabel: document.getElementById("turnLabel"),
   pawnLabel: document.getElementById("pawnLabel"),
   scoreLabel: document.getElementById("scoreLabel"),
+  highestScoreLabel: document.getElementById("highestScoreLabel"),
   wallCountLabel: document.getElementById("wallCountLabel"),
   shortestLabel: document.getElementById("shortestLabel"),
   pawnPolicyLabel: document.getElementById("pawnPolicyLabel"),
@@ -61,6 +62,14 @@ const pawnPolicy = {
   reason: "Initialized with robust preference.",
   confidencePct: 50,
   scoreDelta: 0,
+};
+
+const wallPolicy = {
+  selectedMode: "robust",
+  reason: "Initialized with robust preference.",
+  confidencePct: 50,
+  highestScoreEstimate: 0,
+  abandonedDeadlocks: 0,
 };
 
 function clearAutoMoveTimer() {
@@ -216,6 +225,37 @@ function buildShortestPathCellsFrom(start, distanceMap) {
   return pathCells;
 }
 
+function buildCanonicalShortestPathEdgesFrom(start, distanceMap, wallSet = game.walls) {
+  const startDistance = distanceMap.get(cellId(start));
+  if (!Number.isFinite(startDistance)) return new Set();
+
+  const pathEdges = new Set();
+  const cursor = { ...start };
+  while (cursor.x !== game.goal.x || cursor.y !== game.goal.y) {
+    const currentDistance = distanceMap.get(cellId(cursor));
+    let next = null;
+    for (const n of neighbors(cursor)) {
+      if (hasWallBetween(cursor, n, wallSet)) continue;
+      const d = distanceMap.get(cellId(n));
+      if (!Number.isFinite(d) || d !== currentDistance - 1) continue;
+      if (!next) {
+        next = n;
+        continue;
+      }
+      const nextManhattan = Math.abs(next.x - game.goal.x) + Math.abs(next.y - game.goal.y);
+      const candidateManhattan = Math.abs(n.x - game.goal.x) + Math.abs(n.y - game.goal.y);
+      if (candidateManhattan < nextManhattan) {
+        next = n;
+      }
+    }
+    if (!next) break;
+    pathEdges.add(edgeKey(cursor, next));
+    cursor.x = next.x;
+    cursor.y = next.y;
+  }
+  return pathEdges;
+}
+
 function getDistanceColor(distance, maxDistance) {
   if (!Number.isFinite(distance)) return "#e2e8f0";
   if (maxDistance <= 0) return "hsl(130, 70%, 68%)";
@@ -337,6 +377,7 @@ function loadStrategyFromPayload(payload, sourceName = "loaded JSON") {
   strategyRunner.actions = actions;
   strategyRunner.sourceName = sourceName;
   setStrategyStatus(`Strategy loaded (${actions.length} turns) from ${sourceName}.`);
+  elements.toggleStrategyAutoBtn.textContent = `Auto Strategy: ${strategyRunner.autoEnabled ? "On" : "Off"} (JSON)`;
   updateUI();
 }
 
@@ -381,12 +422,13 @@ function applyWallByEdgeKey(key, reason = "strategy_auto_wall") {
 }
 
 function applyStrategyTurn({ forceEvenIfAuto = false } = {}) {
-  if (!strategyRunner.actions) {
-    setMessage("No strategy loaded yet.");
-    return;
-  }
   if (game.turn !== TURN.WALL_SETTER || game.gameOver) return;
   if (!forceEvenIfAuto) return;
+
+  if (!strategyRunner.actions) {
+    applyAdaptiveWallSetterTurn();
+    return;
+  }
 
   const turnIndex = game.score;
   const action = strategyRunner.actions[turnIndex] ?? null;
@@ -407,7 +449,8 @@ function applyStrategyTurn({ forceEvenIfAuto = false } = {}) {
 function toggleStrategyAuto() {
   strategyRunner.autoEnabled = !strategyRunner.autoEnabled;
   const status = strategyRunner.autoEnabled ? "On" : "Off";
-  elements.toggleStrategyAutoBtn.textContent = `Auto Strategy: ${status}`;
+  const source = strategyRunner.actions ? "JSON" : "Adaptive";
+  elements.toggleStrategyAutoBtn.textContent = `Auto Strategy: ${status} (${source})`;
   if (strategyRunner.autoEnabled && game.turn === TURN.WALL_SETTER && !game.gameOver) {
     setTimeout(() => applyStrategyTurn({ forceEvenIfAuto: true }), 40);
   }
@@ -418,8 +461,8 @@ function setButtonsEnabled() {
   const isWallTurn = game.turn === TURN.WALL_SETTER && !game.gameOver;
   elements.endWallTurnBtn.disabled = !isWallTurn;
   elements.undoBtn.disabled = history.length === 0;
-  elements.playStrategyTurnBtn.disabled = !isWallTurn || !strategyRunner.actions;
-  elements.toggleStrategyAutoBtn.disabled = !strategyRunner.actions;
+  elements.playStrategyTurnBtn.disabled = !isWallTurn;
+  elements.toggleStrategyAutoBtn.disabled = false;
 }
 
 function renderBoard() {
@@ -810,6 +853,139 @@ function getPawnMoveInsights() {
   };
 }
 
+function chooseAdaptiveWallMode(baseDistance) {
+  const moveInsights = getPawnMoveInsights();
+  const selectedInsight = moveInsights.bestMoveId ? moveInsights.insights.get(moveInsights.bestMoveId) : null;
+  const loopRisk = selectedInsight?.loopRisk ?? 0;
+  if (baseDistance <= 7 && loopRisk < 0.55) {
+    return {
+      mode: "aggressive",
+      reason: "Pawn is closer to goal, so maximize immediate delay.",
+      confidencePct: Math.max(55, Math.round(88 - loopRisk * 30)),
+    };
+  }
+  return {
+    mode: "robust",
+    reason: "Deadlock-safe stalling mode with safer mobility.",
+    confidencePct: Math.max(55, Math.round(82 - loopRisk * 25)),
+  };
+}
+
+function evaluateAdaptiveWallCandidate(key, baseDistance, shortestPathEdges, mode) {
+  if (game.walls.has(key)) return null;
+  const testSet = new Set(game.walls);
+  testSet.add(key);
+  if (!hasPathToGoal(testSet)) return null;
+
+  const distanceAfterWall = shortestPathLength(game.pawn, game.goal, testSet);
+  if (!Number.isFinite(distanceAfterWall)) return null;
+
+  const mobilityAfterWall = validPawnMovesFrom(game.pawn, testSet).length;
+  const distanceGain = distanceAfterWall - baseDistance;
+  const blocksCanonicalPath = shortestPathEdges.has(key);
+
+  const lowMobilityRisk = mobilityAfterWall <= 1 ? 1 : mobilityAfterWall === 2 ? 0.45 : 0;
+  const stagnantPocketRisk = mobilityAfterWall <= 2 && distanceGain <= 0 ? 0.6 : 0;
+  const deadlockRisk = Math.min(1, lowMobilityRisk + stagnantPocketRisk);
+  if (deadlockRisk >= 0.95) return { abandonedDeadlock: true };
+
+  const aggressiveUtility =
+    distanceAfterWall * 8 +
+    distanceGain * 5 +
+    (blocksCanonicalPath ? 4 : 0) -
+    mobilityAfterWall * 1.2 -
+    deadlockRisk * 24;
+
+  const robustUtility =
+    distanceAfterWall * 6 +
+    distanceGain * 2.8 +
+    (blocksCanonicalPath ? 2.2 : 0) +
+    mobilityAfterWall * 0.7 -
+    deadlockRisk * 30;
+
+  return {
+    key,
+    utility: mode === "aggressive" ? aggressiveUtility : robustUtility,
+    distanceAfterWall,
+    distanceGain,
+    mobilityAfterWall,
+    blocksCanonicalPath,
+    projectedHighestScore: game.score + Math.max(1, distanceAfterWall),
+  };
+}
+
+function chooseAdaptiveWallAction() {
+  const baseDistance = shortestPathLength(game.pawn, game.goal, game.walls);
+  const distanceMap = computeDistanceMapToGoal();
+  const shortestPathEdges = buildCanonicalShortestPathEdgesFrom(game.pawn, distanceMap, game.walls);
+  const modeSelection = chooseAdaptiveWallMode(baseDistance);
+
+  let bestCandidate = null;
+  let abandonedDeadlocks = 0;
+  for (const key of ALL_EDGE_KEYS) {
+    const candidate = evaluateAdaptiveWallCandidate(key, baseDistance, shortestPathEdges, modeSelection.mode);
+    if (!candidate) {
+      continue;
+    }
+    if (candidate.abandonedDeadlock) {
+      abandonedDeadlocks += 1;
+      continue;
+    }
+    if (!bestCandidate) {
+      bestCandidate = candidate;
+      continue;
+    }
+    const candidateTuple = [
+      candidate.utility,
+      candidate.distanceAfterWall,
+      candidate.distanceGain,
+      candidate.blocksCanonicalPath ? 1 : 0,
+      -candidate.mobilityAfterWall,
+    ];
+    const bestTuple = [
+      bestCandidate.utility,
+      bestCandidate.distanceAfterWall,
+      bestCandidate.distanceGain,
+      bestCandidate.blocksCanonicalPath ? 1 : 0,
+      -bestCandidate.mobilityAfterWall,
+    ];
+    if (compareTuple(candidateTuple, bestTuple) > 0) {
+      bestCandidate = candidate;
+    }
+  }
+
+  return {
+    mode: modeSelection.mode,
+    reason: modeSelection.reason,
+    confidencePct: modeSelection.confidencePct,
+    abandonedDeadlocks,
+    bestCandidate,
+    highestScoreEstimate: bestCandidate
+      ? bestCandidate.projectedHighestScore
+      : game.score + (Number.isFinite(baseDistance) ? baseDistance : 0),
+  };
+}
+
+function applyAdaptiveWallSetterTurn() {
+  if (game.turn !== TURN.WALL_SETTER || game.gameOver) return;
+  const decision = chooseAdaptiveWallAction();
+  wallPolicy.selectedMode = decision.mode;
+  wallPolicy.reason = decision.reason;
+  wallPolicy.confidencePct = decision.confidencePct;
+  wallPolicy.highestScoreEstimate = decision.highestScoreEstimate;
+  wallPolicy.abandonedDeadlocks = decision.abandonedDeadlocks;
+
+  const action = decision.bestCandidate?.key ?? null;
+  if (!action) {
+    endWallTurn("adaptive_deadlock_safe_pass");
+    return;
+  }
+  const placed = applyWallByEdgeKey(action, "adaptive_wall");
+  if (!placed) {
+    endWallTurn("adaptive_illegal_fallback_pass");
+  }
+}
+
 function performAutoPawnMove() {
   if (game.turn !== TURN.PAWN_PUSHER || game.gameOver) return;
   const bestMove = chooseOptimalPawnMove();
@@ -868,6 +1044,23 @@ function movePawnTo(target, options = {}) {
 }
 
 function updateStatusPanel() {
+  if (!strategyRunner.actions && game.turn === TURN.WALL_SETTER && !game.gameOver) {
+    const decision = chooseAdaptiveWallAction();
+    wallPolicy.selectedMode = decision.mode;
+    wallPolicy.reason = decision.reason;
+    wallPolicy.confidencePct = decision.confidencePct;
+    wallPolicy.highestScoreEstimate = decision.highestScoreEstimate;
+    wallPolicy.abandonedDeadlocks = decision.abandonedDeadlocks;
+  } else if (!strategyRunner.actions) {
+    const shortestNow = shortestPathLength(game.pawn, game.goal);
+    wallPolicy.highestScoreEstimate = game.score + (Number.isFinite(shortestNow) ? shortestNow : 0);
+  } else {
+    const shortestNow = shortestPathLength(game.pawn, game.goal);
+    wallPolicy.reason = "Using loaded JSON strategy.";
+    wallPolicy.abandonedDeadlocks = 0;
+    wallPolicy.highestScoreEstimate = game.score + (Number.isFinite(shortestNow) ? shortestNow : 0);
+  }
+
   const moveInsights = getPawnMoveInsights();
   pawnPolicy.selectedMode = moveInsights.selectedMode;
   pawnPolicy.reason = moveInsights.reason;
@@ -877,15 +1070,17 @@ function updateStatusPanel() {
   elements.turnLabel.textContent = game.gameOver ? "Game ended" : game.turn;
   elements.pawnLabel.textContent = `(${game.pawn.x}, ${game.pawn.y})`;
   elements.scoreLabel.textContent = String(game.score);
+  elements.highestScoreLabel.textContent = String(wallPolicy.highestScoreEstimate);
   elements.wallCountLabel.textContent = String(game.walls.size);
   const shortest = shortestPathLength(game.pawn, game.goal);
   elements.shortestLabel.textContent = Number.isFinite(shortest) ? String(shortest) : "No path";
   elements.pawnPolicyLabel.textContent = getPawnPolicyDisplayName();
   elements.adaptiveConfidenceLabel.textContent = `${pawnPolicy.confidencePct}% (delta ${pawnPolicy.scoreDelta})`;
   elements.policyVizHint.textContent =
-    `Visualization: blue-ringed adjacent cell is the adaptive recommendation (${pawnPolicy.selectedMode}). ` +
+    `Visualization: blue-ringed adjacent cell is the adaptive pawn recommendation (${pawnPolicy.selectedMode}). ` +
     "Each adjacent option shows W/D/L where W is worst-case distance, D is immediate distance, and L is loop-risk %. " +
-    `Reason: ${pawnPolicy.reason}`;
+    `Pawn reason: ${pawnPolicy.reason} Wall reason: ${wallPolicy.reason} ` +
+    `(deadlock abandons: ${wallPolicy.abandonedDeadlocks}).`;
 }
 
 function updateUI() {
@@ -904,6 +1099,11 @@ function resetGame() {
   game.log = [];
   game.ply = 0;
   history.length = 0;
+  wallPolicy.selectedMode = "robust";
+  wallPolicy.reason = "Initialized with robust preference.";
+  wallPolicy.confidencePct = 50;
+  wallPolicy.highestScoreEstimate = shortestPathLength(game.pawn, game.goal);
+  wallPolicy.abandonedDeadlocks = 0;
   addLogEntry("System", "game_start", {
     boardSize: GRID_SIZE,
     start: { x: 1, y: 1 },
@@ -914,11 +1114,13 @@ function resetGame() {
     setStrategyStatus(
       `Strategy loaded (${strategyRunner.actions.length} turns) from ${strategyRunner.sourceName || "JSON"}.`
     );
+    elements.toggleStrategyAutoBtn.textContent = `Auto Strategy: ${strategyRunner.autoEnabled ? "On" : "Off"} (JSON)`;
   } else {
-    setStrategyStatus("No strategy loaded.");
+    setStrategyStatus("No JSON loaded. Adaptive Wall-Setter strategy is active.");
+    elements.toggleStrategyAutoBtn.textContent = `Auto Strategy: ${strategyRunner.autoEnabled ? "On" : "Off"} (Adaptive)`;
   }
   updateUI();
-  if (strategyRunner.actions && strategyRunner.autoEnabled) {
+  if (strategyRunner.autoEnabled) {
     setTimeout(() => applyStrategyTurn({ forceEvenIfAuto: true }), 40);
   }
 }
