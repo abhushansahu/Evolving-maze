@@ -8,9 +8,14 @@ Simple browser game for the 10x10 wall-placement puzzle with:
 - Live shortest-path visualization with distance heatmap
 - Training logs downloadable as JSON and JSONL
 
+## Project links
+
+- GitHub repo: [Evolving-maze](https://github.com/abhushansahu/Evolving-maze)
+- Live page: [abhushansahu.github.io/puzzle_g_research](https://abhushansahu.github.io/puzzle_g_research/)
+
 ## Run
 
-Open `index.html` in a browser.
+Open [`index.html`](index.html) in a browser.
 
 ## Controls
 
@@ -47,3 +52,11 @@ Each event includes:
 - scalar metrics (`score`, `shortestPath`, `wallCount`)
 
 This structure is useful for offline policy training or evaluation pipelines.
+
+Useful files:
+
+- Game logic: [`app.js`](app.js)
+- Strategy builder: [`log/build_state_policy.py`](log/build_state_policy.py)
+- Current state policy: [`log/wall-pawn-state-policy.json`](log/wall-pawn-state-policy.json)
+- Replay log: [`log/wall-pawn-game-log-replay.jsonl`](log/wall-pawn-game-log-replay.jsonl)
+- Proof note: [`strategy_score_proof.md`](strategy_score_proof.md)
