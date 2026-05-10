@@ -34,6 +34,18 @@
           <button id="downloadJsonlBtn" type="button">Download Log JSONL</button>
         </div>
 
+        <div class="button-row strategy-row">
+          <input id="strategyFileInput" type="file" accept=".json,application/json" />
+          <button id="loadStrategyBtn" type="button">Load Strategy JSON</button>
+        </div>
+
+        <div class="button-row">
+          <button id="playStrategyTurnBtn" type="button">Play Strategy Turn</button>
+          <button id="toggleStrategyAutoBtn" type="button">Auto Strategy: Off</button>
+        </div>
+
+        <p id="strategyStatus" class="subtext"></p>
+
         <p id="message" class="message" aria-live="polite"></p>
       </section>
 

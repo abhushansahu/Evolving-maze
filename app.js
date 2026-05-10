@@ -19,6 +19,11 @@ const elements = {
   resetBtn: document.getElementById("resetBtn"),
   downloadJsonBtn: document.getElementById("downloadJsonBtn"),
   downloadJsonlBtn: document.getElementById("downloadJsonlBtn"),
+  strategyFileInput: document.getElementById("strategyFileInput"),
+  loadStrategyBtn: document.getElementById("loadStrategyBtn"),
+  playStrategyTurnBtn: document.getElementById("playStrategyTurnBtn"),
+  toggleStrategyAutoBtn: document.getElementById("toggleStrategyAutoBtn"),
+  strategyStatus: document.getElementById("strategyStatus"),
 };
 
 const game = {
@@ -34,6 +39,12 @@ const game = {
 
 const history = [];
 let autoMoveTimerId = null;
+
+const strategyRunner = {
+  actions: null,
+  sourceName: "",
+  autoEnabled: false,
+};
 
 function clearAutoMoveTimer() {
   if (autoMoveTimerId !== null) {
@@ -216,10 +227,127 @@ function setMessage(text) {
   elements.message.textContent = text;
 }
 
+function setStrategyStatus(text) {
+  elements.strategyStatus.textContent = text;
+}
+
+function parseEdgeKeyToEndpoints(key) {
+  const [left, right] = key.split("|");
+  const [ax, ay] = left.split(",").map((v) => Number(v));
+  const [bx, by] = right.split(",").map((v) => Number(v));
+  if ([ax, ay, bx, by].some((v) => Number.isNaN(v))) return null;
+  return {
+    a: { x: ax, y: ay },
+    b: { x: bx, y: by },
+  };
+}
+
+function normalizeAction(action) {
+  if (action == null) return null;
+  if (typeof action !== "string") return null;
+  const endpoints = parseEdgeKeyToEndpoints(action);
+  if (!endpoints) return null;
+  return edgeKey(endpoints.a, endpoints.b);
+}
+
+function loadStrategyFromPayload(payload, sourceName = "loaded JSON") {
+  let actions = null;
+  if (Array.isArray(payload?.actions)) {
+    actions = payload.actions.map((action) => normalizeAction(action));
+  } else if (Array.isArray(payload?.exactStatePolicy)) {
+    actions = payload.exactStatePolicy.map((item) => normalizeAction(item?.action));
+  }
+
+  if (!actions) {
+    throw new Error("Expected `actions` or `exactStatePolicy` array in strategy JSON.");
+  }
+
+  strategyRunner.actions = actions;
+  strategyRunner.sourceName = sourceName;
+  setStrategyStatus(`Strategy loaded (${actions.length} turns) from ${sourceName}.`);
+  updateUI();
+}
+
+function loadStrategyFromFile() {
+  const file = elements.strategyFileInput.files?.[0];
+  if (!file) {
+    setMessage("Choose a strategy JSON file first.");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onerror = () => setMessage("Failed to read strategy file.");
+  reader.onload = () => {
+    try {
+      const payload = JSON.parse(String(reader.result));
+      loadStrategyFromPayload(payload, file.name);
+      setMessage("Strategy file loaded.");
+    } catch (error) {
+      setMessage(`Could not parse strategy file: ${error.message}`);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function applyWallByEdgeKey(key, reason = "strategy_auto_wall") {
+  const endpoints = parseEdgeKeyToEndpoints(key);
+  if (!endpoints) return false;
+  if (game.walls.has(key)) return false;
+
+  const testSet = new Set(game.walls);
+  testSet.add(key);
+  if (!hasPathToGoal(testSet)) return false;
+
+  saveUndoSnapshot();
+  game.walls.add(key);
+  addLogEntry(TURN.WALL_SETTER, "place_wall", {
+    from: endpoints.a,
+    to: endpoints.b,
+    edgeKey: key,
+  });
+  endWallTurn(reason, { saveSnapshot: false });
+  return true;
+}
+
+function applyStrategyTurn({ forceEvenIfAuto = false } = {}) {
+  if (!strategyRunner.actions) {
+    setMessage("No strategy loaded yet.");
+    return;
+  }
+  if (game.turn !== TURN.WALL_SETTER || game.gameOver) return;
+  if (!forceEvenIfAuto) return;
+
+  const turnIndex = game.score;
+  const action = strategyRunner.actions[turnIndex] ?? null;
+  if (action == null) {
+    endWallTurn("strategy_pass");
+    setMessage(`Strategy turn ${turnIndex + 1}: pass.`);
+    return;
+  }
+
+  const placed = applyWallByEdgeKey(action, "strategy_wall");
+  if (!placed) {
+    endWallTurn("strategy_illegal_fallback_pass");
+    setMessage(`Strategy wall ${action} was unavailable/illegal; passed instead.`);
+    return;
+  }
+}
+
+function toggleStrategyAuto() {
+  strategyRunner.autoEnabled = !strategyRunner.autoEnabled;
+  const status = strategyRunner.autoEnabled ? "On" : "Off";
+  elements.toggleStrategyAutoBtn.textContent = `Auto Strategy: ${status}`;
+  if (strategyRunner.autoEnabled && game.turn === TURN.WALL_SETTER && !game.gameOver) {
+    setTimeout(() => applyStrategyTurn({ forceEvenIfAuto: true }), 40);
+  }
+  updateUI();
+}
+
 function setButtonsEnabled() {
   const isWallTurn = game.turn === TURN.WALL_SETTER && !game.gameOver;
   elements.endWallTurnBtn.disabled = !isWallTurn;
   elements.undoBtn.disabled = history.length === 0;
+  elements.playStrategyTurnBtn.disabled = !isWallTurn || !strategyRunner.actions;
+  elements.toggleStrategyAutoBtn.disabled = !strategyRunner.actions;
 }
 
 function renderBoard() {
@@ -413,6 +541,9 @@ function movePawnTo(target, options = {}) {
   }
 
   updateUI();
+  if (!game.gameOver && strategyRunner.autoEnabled && game.turn === TURN.WALL_SETTER) {
+    setTimeout(() => applyStrategyTurn({ forceEvenIfAuto: true }), 40);
+  }
 }
 
 function updateStatusPanel() {
@@ -446,7 +577,17 @@ function resetGame() {
     goal: { x: 10, y: 10 },
   });
   setMessage("Wall-Setter starts. Place one legal wall (auto-end) or press Space to pass.");
+  if (strategyRunner.actions) {
+    setStrategyStatus(
+      `Strategy loaded (${strategyRunner.actions.length} turns) from ${strategyRunner.sourceName || "JSON"}.`
+    );
+  } else {
+    setStrategyStatus("No strategy loaded.");
+  }
   updateUI();
+  if (strategyRunner.actions && strategyRunner.autoEnabled) {
+    setTimeout(() => applyStrategyTurn({ forceEvenIfAuto: true }), 40);
+  }
 }
 
 function triggerDownload(filename, data, mimeType) {
@@ -489,6 +630,9 @@ elements.undoBtn.addEventListener("click", undoLastAction);
 elements.resetBtn.addEventListener("click", resetGame);
 elements.downloadJsonBtn.addEventListener("click", downloadJson);
 elements.downloadJsonlBtn.addEventListener("click", downloadJsonl);
+elements.loadStrategyBtn.addEventListener("click", loadStrategyFromFile);
+elements.playStrategyTurnBtn.addEventListener("click", () => applyStrategyTurn({ forceEvenIfAuto: true }));
+elements.toggleStrategyAutoBtn.addEventListener("click", toggleStrategyAuto);
 document.addEventListener("keydown", (event) => {
   if (event.code !== "Space") return;
   const activeTag = document.activeElement?.tagName || "";

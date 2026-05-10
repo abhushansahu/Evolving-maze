@@ -48,6 +48,11 @@ h1 {
   margin-bottom: 0.75rem;
 }
 
+.strategy-row input[type="file"] {
+  max-width: 100%;
+  color: #cbd5e1;
+}
+
 button {
   border: 1px solid #334155;
   border-radius: 8px;
