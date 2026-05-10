@@ -13,6 +13,8 @@ const elements = {
   scoreLabel: document.getElementById("scoreLabel"),
   wallCountLabel: document.getElementById("wallCountLabel"),
   shortestLabel: document.getElementById("shortestLabel"),
+  pawnPolicyLabel: document.getElementById("pawnPolicyLabel"),
+  adaptiveConfidenceLabel: document.getElementById("adaptiveConfidenceLabel"),
   message: document.getElementById("message"),
   endWallTurnBtn: document.getElementById("endWallTurnBtn"),
   undoBtn: document.getElementById("undoBtn"),
@@ -23,6 +25,7 @@ const elements = {
   loadStrategyBtn: document.getElementById("loadStrategyBtn"),
   playStrategyTurnBtn: document.getElementById("playStrategyTurnBtn"),
   toggleStrategyAutoBtn: document.getElementById("toggleStrategyAutoBtn"),
+  policyVizHint: document.getElementById("policyVizHint"),
   strategyStatus: document.getElementById("strategyStatus"),
 };
 
@@ -44,6 +47,20 @@ const strategyRunner = {
   actions: null,
   sourceName: "",
   autoEnabled: false,
+};
+
+const PAWN_POLICY = {
+  ADAPTIVE: "adaptive",
+  GREEDY: "greedy",
+  ROBUST: "robust",
+};
+
+const pawnPolicy = {
+  mode: PAWN_POLICY.ADAPTIVE,
+  selectedMode: PAWN_POLICY.ROBUST,
+  reason: "Initialized with robust preference.",
+  confidencePct: 50,
+  scoreDelta: 0,
 };
 
 function clearAutoMoveTimer() {
@@ -143,6 +160,10 @@ function currentValidPawnMoves() {
   return neighbors(game.pawn).filter((n) => !hasWallBetween(game.pawn, n));
 }
 
+function validPawnMovesFrom(pos, wallSet = game.walls) {
+  return neighbors(pos).filter((n) => !hasWallBetween(pos, n, wallSet));
+}
+
 function cellId(pos) {
   return `${pos.x},${pos.y}`;
 }
@@ -201,6 +222,57 @@ function getDistanceColor(distance, maxDistance) {
   const ratio = Math.max(0, Math.min(1, distance / maxDistance));
   const hue = 120 - ratio * 120;
   return `hsl(${hue}, 75%, 78%)`;
+}
+
+function formatDistance(distance) {
+  return Number.isFinite(distance) ? String(distance) : "∞";
+}
+
+function getPawnPolicyDisplayName() {
+  if (pawnPolicy.mode === PAWN_POLICY.ADAPTIVE) {
+    const selected = pawnPolicy.selectedMode === PAWN_POLICY.GREEDY ? "Greedy" : "Robust";
+    return `Adaptive (auto -> ${selected})`;
+  }
+  return pawnPolicy.mode === PAWN_POLICY.ROBUST ? "Robust (lookahead)" : "Greedy (1-step)";
+}
+
+function getPawnTrail(limit = 10) {
+  const trail = game.log
+    .filter((entry) => entry.actor === TURN.PAWN_PUSHER && entry.action === "move_pawn")
+    .map((entry) => ({ x: entry.pawn.x, y: entry.pawn.y }));
+  trail.push({ ...game.pawn });
+  return trail.slice(-limit);
+}
+
+function estimateLoopRiskForMove(candidateMove, candidateDistance) {
+  const trail = getPawnTrail(10);
+  const recent = trail.slice(-8);
+  const candidateId = cellId(candidateMove);
+  const currentId = cellId(game.pawn);
+  const previousId = recent.length >= 2 ? cellId(recent[recent.length - 2]) : null;
+
+  const repeatCount = recent.filter((pos) => cellId(pos) === candidateId).length;
+  const repeatRisk = Math.min(1, repeatCount / 3);
+  const backtrackRisk = previousId && previousId === candidateId ? 1 : 0;
+
+  const recentMoveEntries = game.log
+    .filter((entry) => entry.actor === TURN.PAWN_PUSHER && entry.action === "move_pawn")
+    .slice(-6);
+  const recentDistances = recentMoveEntries
+    .map((entry) => (Number.isFinite(entry.shortestPath) ? entry.shortestPath : Infinity))
+    .filter((d) => Number.isFinite(d));
+  const bestRecentDistance = recentDistances.length > 0 ? Math.min(...recentDistances) : candidateDistance;
+  const stagnationRisk = candidateDistance > bestRecentDistance ? Math.min(1, (candidateDistance - bestRecentDistance) / 3) : 0;
+
+  // Penalize staying in same local pocket with little net progress.
+  const localPocketRisk = recent.filter((pos) => Math.abs(pos.x - game.pawn.x) + Math.abs(pos.y - game.pawn.y) <= 1).length >= 5 ? 0.35 : 0;
+  const idempotentRisk = candidateId === currentId ? 1 : 0;
+
+  const risk = Math.min(
+    1,
+    repeatRisk * 0.35 + backtrackRisk * 0.35 + stagnationRisk * 0.2 + localPocketRisk + idempotentRisk
+  );
+  return risk;
 }
 
 function addLogEntry(actor, action, details = {}) {
@@ -354,6 +426,7 @@ function renderBoard() {
   elements.board.innerHTML = "";
   const distanceMap = computeDistanceMapToGoal();
   const pathCells = buildShortestPathCellsFrom(game.pawn, distanceMap);
+  const moveInsights = getPawnMoveInsights();
   const reachableDistances = Array.from(distanceMap.values());
   const maxDistance = reachableDistances.length > 0 ? Math.max(...reachableDistances) : 0;
 
@@ -381,10 +454,25 @@ function renderBoard() {
         cell.classList.add("shortest-path-cell");
       }
 
+      const moveInsight = moveInsights.insights.get(id);
+      if (moveInsight) {
+        cell.classList.add("pawn-option");
+        if (id === moveInsights.bestMoveId) {
+          cell.classList.add("pawn-option-recommended");
+        }
+      }
+
       const distanceLabel = document.createElement("span");
       distanceLabel.className = "distance-label";
-      distanceLabel.textContent = Number.isFinite(distance) ? String(distance) : "∞";
+      distanceLabel.textContent = formatDistance(distance);
       cell.appendChild(distanceLabel);
+
+      if (moveInsight) {
+        const moveScoreLabel = document.createElement("span");
+        moveScoreLabel.className = "move-score-label";
+        moveScoreLabel.textContent = `W${formatDistance(moveInsight.worstDistance)}/D${formatDistance(moveInsight.greedyDistance)}/L${Math.round(moveInsight.loopRisk * 100)}`;
+        cell.appendChild(moveScoreLabel);
+      }
 
       if (x === game.pawn.x && y === game.pawn.y) {
         const pawn = document.createElement("div");
@@ -463,7 +551,61 @@ function attemptPlaceWall(a, b, key, edgeElement) {
   endWallTurn("wall_placed_auto", { saveSnapshot: false });
 }
 
-function chooseOptimalPawnMove() {
+function buildAllEdgeKeys() {
+  const keys = [];
+  // Vertical walls between (x,y) and (x+1,y)
+  for (let y = 1; y <= GRID_SIZE; y += 1) {
+    for (let x = 1; x < GRID_SIZE; x += 1) {
+      keys.push(edgeKey({ x, y }, { x: x + 1, y }));
+    }
+  }
+  // Horizontal walls between (x,y) and (x,y+1)
+  for (let y = 1; y < GRID_SIZE; y += 1) {
+    for (let x = 1; x <= GRID_SIZE; x += 1) {
+      keys.push(edgeKey({ x, y }, { x, y: y + 1 }));
+    }
+  }
+  return keys;
+}
+
+const ALL_EDGE_KEYS = buildAllEdgeKeys();
+
+function compareTuple(a, b) {
+  const n = Math.min(a.length, b.length);
+  for (let i = 0; i < n; i += 1) {
+    if (a[i] < b[i]) return -1;
+    if (a[i] > b[i]) return 1;
+  }
+  return 0;
+}
+
+function evaluateWorstWallResponseForPawn(pawnPos, wallSet = game.walls) {
+  const baseDistanceMap = computeDistanceMapToGoal(wallSet);
+  const baseDistance = baseDistanceMap.get(cellId(pawnPos)) ?? Infinity;
+  const baseMobility = validPawnMovesFrom(pawnPos, wallSet).length;
+
+  // Wall-Setter can always effectively "pass", so include no-wall baseline.
+  let worstForPawn = [baseDistance, -baseMobility];
+  for (const key of ALL_EDGE_KEYS) {
+    if (wallSet.has(key)) continue;
+    const testSet = new Set(wallSet);
+    testSet.add(key);
+
+    // Wall placement must keep a path for the current pawn position.
+    if (!Number.isFinite(shortestPathLength(pawnPos, game.goal, testSet))) continue;
+
+    const distanceMap = computeDistanceMapToGoal(testSet);
+    const remainingDistance = distanceMap.get(cellId(pawnPos)) ?? Infinity;
+    const mobility = validPawnMovesFrom(pawnPos, testSet).length;
+    const candidateForWallSetter = [remainingDistance, -mobility];
+    if (compareTuple(candidateForWallSetter, worstForPawn) > 0) {
+      worstForPawn = candidateForWallSetter;
+    }
+  }
+  return worstForPawn;
+}
+
+function chooseGreedyPawnMove() {
   const validMoves = currentValidPawnMoves();
   if (validMoves.length === 0) return null;
   const distanceMap = computeDistanceMapToGoal();
@@ -487,6 +629,185 @@ function chooseOptimalPawnMove() {
     }
   }
   return bestMove;
+}
+
+function chooseRobustPawnMove() {
+  const validMoves = currentValidPawnMoves();
+  if (validMoves.length === 0) return null;
+
+  let bestMove = validMoves[0];
+  let bestScore = null;
+
+  for (const candidate of validMoves) {
+    const worstWallResponse = evaluateWorstWallResponseForPawn(candidate, game.walls);
+    const manhattan = Math.abs(candidate.x - game.goal.x) + Math.abs(candidate.y - game.goal.y);
+    const candidateScore = [...worstWallResponse, manhattan];
+    if (!bestScore || compareTuple(candidateScore, bestScore) < 0) {
+      bestScore = candidateScore;
+      bestMove = candidate;
+    }
+  }
+
+  return bestMove;
+}
+
+function chooseModeFromInsights(insights, bestGreedyId, bestRobustId) {
+  if (!bestGreedyId && !bestRobustId) {
+    return {
+      mode: PAWN_POLICY.ROBUST,
+      bestMoveId: null,
+      reason: "No legal pawn moves.",
+      confidencePct: 50,
+      scoreDelta: 0,
+    };
+  }
+  if (!bestGreedyId) {
+    return {
+      mode: PAWN_POLICY.ROBUST,
+      bestMoveId: bestRobustId,
+      reason: "Only robust candidate available.",
+      confidencePct: 92,
+      scoreDelta: 9,
+    };
+  }
+  if (!bestRobustId) {
+    return {
+      mode: PAWN_POLICY.GREEDY,
+      bestMoveId: bestGreedyId,
+      reason: "Only greedy candidate available.",
+      confidencePct: 92,
+      scoreDelta: 9,
+    };
+  }
+
+  const greedyBest = insights.get(bestGreedyId);
+  const robustBest = insights.get(bestRobustId);
+  if (!greedyBest || !robustBest) {
+    return {
+      mode: PAWN_POLICY.ROBUST,
+      bestMoveId: bestRobustId,
+      reason: "Fallback to robust due to missing insight.",
+      confidencePct: 60,
+      scoreDelta: 1,
+    };
+  }
+
+  const greedyCost =
+    greedyBest.worstDistance * 5 + greedyBest.greedyDistance * 1.5 - greedyBest.worstMobility * 0.6 + greedyBest.loopRisk * 12;
+  const robustCost =
+    robustBest.worstDistance * 5 + robustBest.greedyDistance * 1.5 - robustBest.worstMobility * 0.6 + robustBest.loopRisk * 12;
+
+  const chooseGreedy = greedyCost < robustCost;
+  const chosen = chooseGreedy ? greedyBest : robustBest;
+  const selectedMode = chooseGreedy ? PAWN_POLICY.GREEDY : PAWN_POLICY.ROBUST;
+  const bestMoveId = chooseGreedy ? bestGreedyId : bestRobustId;
+
+  const scoreDelta = Math.abs(greedyCost - robustCost);
+  const baseConfidence = Math.min(95, 50 + scoreDelta * 8);
+  const confidencePct = Math.max(51, Math.round(baseConfidence - chosen.loopRisk * 25));
+
+  const reason = chooseGreedy
+    ? chosen.loopRisk >= 0.45
+      ? "Switched to greedy due to elevated loop risk under robust."
+      : "Switched to greedy: lower combined risk-speed score."
+    : chosen.loopRisk <= 0.25
+      ? "Stayed robust: low loop risk with safer worst-case outlook."
+      : "Stayed robust: despite loop risk, robust still scores better.";
+
+  return {
+    mode: selectedMode,
+    bestMoveId,
+    reason,
+    confidencePct,
+    scoreDelta: Number(scoreDelta.toFixed(2)),
+  };
+}
+
+function chooseOptimalPawnMove() {
+  const analysis = getPawnMoveInsights();
+  const bestMove = analysis.bestMoveId ? analysis.insights.get(analysis.bestMoveId)?.move ?? null : null;
+  pawnPolicy.selectedMode = analysis.selectedMode;
+  pawnPolicy.reason = analysis.reason;
+  pawnPolicy.confidencePct = analysis.confidencePct;
+  pawnPolicy.scoreDelta = analysis.scoreDelta;
+  return bestMove;
+}
+
+function getPawnMoveInsights() {
+  const validMoves = currentValidPawnMoves();
+  const distanceMap = computeDistanceMapToGoal();
+  const insights = new Map();
+  let bestGreedyId = null;
+  let bestGreedyScore = null;
+  let bestRobustId = null;
+  let bestRobustScore = null;
+
+  for (const candidate of validMoves) {
+    const candidateId = cellId(candidate);
+    const greedyDistance = distanceMap.get(candidateId) ?? Infinity;
+    const [worstDistance, negWorstMobility] = evaluateWorstWallResponseForPawn(candidate, game.walls);
+    const loopRisk = estimateLoopRiskForMove(candidate, greedyDistance);
+    const manhattan = Math.abs(candidate.x - game.goal.x) + Math.abs(candidate.y - game.goal.y);
+    const greedyScore = [greedyDistance, manhattan];
+    const robustScore = [worstDistance, negWorstMobility, manhattan];
+
+    insights.set(candidateId, {
+      move: candidate,
+      greedyDistance,
+      worstDistance,
+      worstMobility: -negWorstMobility,
+      loopRisk,
+      greedyScore,
+      robustScore,
+    });
+
+    if (!bestGreedyScore || compareTuple(greedyScore, bestGreedyScore) < 0) {
+      bestGreedyScore = greedyScore;
+      bestGreedyId = candidateId;
+    }
+    if (!bestRobustScore || compareTuple(robustScore, bestRobustScore) < 0) {
+      bestRobustScore = robustScore;
+      bestRobustId = candidateId;
+    }
+  }
+
+  if (pawnPolicy.mode === PAWN_POLICY.GREEDY) {
+    return {
+      insights,
+      bestGreedyId,
+      bestRobustId,
+      bestMoveId: bestGreedyId,
+      selectedMode: PAWN_POLICY.GREEDY,
+      reason: "Manual greedy mode.",
+      confidencePct: 100,
+      scoreDelta: 0,
+    };
+  }
+  if (pawnPolicy.mode === PAWN_POLICY.ROBUST) {
+    return {
+      insights,
+      bestGreedyId,
+      bestRobustId,
+      bestMoveId: bestRobustId,
+      selectedMode: PAWN_POLICY.ROBUST,
+      reason: "Manual robust mode.",
+      confidencePct: 100,
+      scoreDelta: 0,
+    };
+  }
+
+  const adaptive = chooseModeFromInsights(insights, bestGreedyId, bestRobustId);
+
+  return {
+    insights,
+    bestGreedyId,
+    bestRobustId,
+    bestMoveId: adaptive.bestMoveId,
+    selectedMode: adaptive.mode,
+    reason: adaptive.reason,
+    confidencePct: adaptive.confidencePct,
+    scoreDelta: adaptive.scoreDelta,
+  };
 }
 
 function performAutoPawnMove() {
@@ -547,12 +868,24 @@ function movePawnTo(target, options = {}) {
 }
 
 function updateStatusPanel() {
+  const moveInsights = getPawnMoveInsights();
+  pawnPolicy.selectedMode = moveInsights.selectedMode;
+  pawnPolicy.reason = moveInsights.reason;
+  pawnPolicy.confidencePct = moveInsights.confidencePct;
+  pawnPolicy.scoreDelta = moveInsights.scoreDelta;
+
   elements.turnLabel.textContent = game.gameOver ? "Game ended" : game.turn;
   elements.pawnLabel.textContent = `(${game.pawn.x}, ${game.pawn.y})`;
   elements.scoreLabel.textContent = String(game.score);
   elements.wallCountLabel.textContent = String(game.walls.size);
   const shortest = shortestPathLength(game.pawn, game.goal);
   elements.shortestLabel.textContent = Number.isFinite(shortest) ? String(shortest) : "No path";
+  elements.pawnPolicyLabel.textContent = getPawnPolicyDisplayName();
+  elements.adaptiveConfidenceLabel.textContent = `${pawnPolicy.confidencePct}% (delta ${pawnPolicy.scoreDelta})`;
+  elements.policyVizHint.textContent =
+    `Visualization: blue-ringed adjacent cell is the adaptive recommendation (${pawnPolicy.selectedMode}). ` +
+    "Each adjacent option shows W/D/L where W is worst-case distance, D is immediate distance, and L is loop-risk %. " +
+    `Reason: ${pawnPolicy.reason}`;
 }
 
 function updateUI() {

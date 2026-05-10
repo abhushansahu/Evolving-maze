@@ -21,6 +21,8 @@
           <div><strong>Score (moves):</strong> <span id="scoreLabel">0</span></div>
           <div><strong>Walls:</strong> <span id="wallCountLabel">0</span></div>
           <div><strong>Shortest path now:</strong> <span id="shortestLabel">-</span></div>
+          <div><strong>Pawn policy:</strong> <span id="pawnPolicyLabel">Adaptive (auto)</span></div>
+          <div><strong>Adaptive confidence:</strong> <span id="adaptiveConfidenceLabel">-</span></div>
         </div>
 
         <div class="button-row">
@@ -44,6 +46,7 @@
           <button id="toggleStrategyAutoBtn" type="button">Auto Strategy: Off</button>
         </div>
 
+        <p id="policyVizHint" class="subtext policy-hint"></p>
         <p id="strategyStatus" class="subtext"></p>
 
         <p id="message" class="message" aria-live="polite"></p>
