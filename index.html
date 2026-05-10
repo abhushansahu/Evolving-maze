@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wall-Setter vs Pawn-Pusher</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <section class="panel controls">
+        <h1>Wall-Setter vs Pawn-Pusher</h1>
+        <p class="subtext">
+          10x10 grid. Wall-Setter starts and may place one legal wall or pass. After each wall turn,
+          Pawn-Pusher auto-moves one optimal step toward the goal. Press Space to pass quickly.
+        </p>
+
+        <div class="status-grid">
+          <div><strong>Turn:</strong> <span id="turnLabel">-</span></div>
+          <div><strong>Pawn:</strong> <span id="pawnLabel">-</span></div>
+          <div><strong>Score (moves):</strong> <span id="scoreLabel">0</span></div>
+          <div><strong>Walls:</strong> <span id="wallCountLabel">0</span></div>
+          <div><strong>Shortest path now:</strong> <span id="shortestLabel">-</span></div>
+        </div>
+
+        <div class="button-row">
+          <button id="endWallTurnBtn" type="button">Pass Wall-Setter Turn (Space)</button>
+          <button id="undoBtn" type="button">Undo</button>
+        </div>
+
+        <div class="button-row">
+          <button id="resetBtn" type="button">Reset Game</button>
+          <button id="downloadJsonBtn" type="button">Download Log JSON</button>
+          <button id="downloadJsonlBtn" type="button">Download Log JSONL</button>
+        </div>
+
+        <p id="message" class="message" aria-live="polite"></p>
+      </section>
+
+      <section class="panel board-panel">
+        <div id="board" class="board" aria-label="Game board"></div>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+  </html>
