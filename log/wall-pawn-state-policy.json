@@ -1,0 +1,1583 @@
+{
+  "sourceActionList": "log/wall-pawn-strategy-163.json",
+  "strategyType": "state_based_with_fallback",
+  "description": {
+    "exact_state_rule": "If full state hash matches a known state from the 164-move run, play the stored action.",
+    "fallback_rule": "Otherwise choose legal wall maximizing shortest-path length, then minimizing number of pawn-optimal tie moves, then preferring template walls."
+  },
+  "templateWalls": [
+    "1,4|2,4",
+    "1,5|2,5",
+    "1,6|2,6",
+    "1,8|1,9",
+    "10,3|10,4",
+    "10,5|10,6",
+    "10,9|10,10",
+    "2,1|2,2",
+    "2,2|2,3",
+    "2,4|3,4",
+    "2,5|3,5",
+    "2,6|2,7",
+    "2,6|3,6",
+    "2,7|2,8",
+    "2,7|3,7",
+    "2,8|3,8",
+    "2,9|2,10",
+    "2,9|3,9",
+    "3,1|3,2",
+    "3,2|3,3",
+    "3,3|3,4",
+    "3,5|3,6",
+    "3,7|3,8",
+    "3,8|3,9",
+    "3,9|3,10",
+    "4,1|4,2",
+    "4,1|5,1",
+    "4,2|4,3",
+    "4,3|4,4",
+    "4,4|4,5",
+    "4,5|4,6",
+    "4,6|4,7",
+    "4,7|4,8",
+    "4,8|4,9",
+    "4,9|4,10",
+    "5,2|5,3",
+    "5,2|6,2",
+    "5,4|5,5",
+    "5,4|6,4",
+    "5,5|6,5",
+    "5,6|5,7",
+    "5,6|6,6",
+    "5,7|6,7",
+    "5,8|6,8",
+    "5,9|5,10",
+    "5,9|6,9",
+    "6,2|6,3",
+    "6,2|7,2",
+    "6,4|6,5",
+    "6,4|7,4",
+    "6,6|6,7",
+    "6,8|6,9",
+    "6,9|6,10",
+    "7,1|8,1",
+    "7,2|7,3",
+    "7,2|8,2",
+    "7,3|7,4",
+    "7,4|7,5",
+    "7,5|7,6",
+    "7,7|7,8",
+    "7,7|8,7",
+    "7,8|7,9",
+    "7,9|7,10",
+    "8,2|9,2",
+    "8,3|9,3",
+    "8,4|9,4",
+    "8,5|8,6",
+    "8,5|9,5",
+    "8,6|8,7",
+    "8,6|9,6",
+    "8,7|9,7",
+    "8,8|9,8",
+    "8,9|8,10",
+    "8,9|9,9",
+    "9,1|9,2",
+    "9,2|9,3",
+    "9,4|9,5",
+    "9,6|9,7",
+    "9,7|9,8",
+    "9,8|9,9",
+    "9,9|9,10"
+  ],
+  "exactStatePolicy": [
+    {
+      "stateHash": "7dbe058badca37168b25ec65c894683f14479ebf",
+      "pawn": {
+        "x": 1,
+        "y": 1
+      },
+      "wallCount": 0,
+      "action": "2,1|2,2"
+    },
+    {
+      "stateHash": "f2279a82aaba3f36adf6a20f360a6f44e947af96",
+      "pawn": {
+        "x": 2,
+        "y": 1
+      },
+      "wallCount": 1,
+      "action": "3,1|3,2"
+    },
+    {
+      "stateHash": "8fd3fb07ab8e54ecdf45e153e85575b4d64c16ef",
+      "pawn": {
+        "x": 3,
+        "y": 1
+      },
+      "wallCount": 2,
+      "action": "4,1|4,2"
+    },
+    {
+      "stateHash": "48d671cccc3e7b730245ceedab48996f394e9e9a",
+      "pawn": {
+        "x": 4,
+        "y": 1
+      },
+      "wallCount": 3,
+      "action": "4,1|5,1"
+    },
+    {
+      "stateHash": "a72258230189fdcfe787e9f63380ece2142bbba0",
+      "pawn": {
+        "x": 3,
+        "y": 1
+      },
+      "wallCount": 4,
+      "action": null
+    },
+    {
+      "stateHash": "7af8251c5bcb2408de44ec750c7e1716b52e53fd",
+      "pawn": {
+        "x": 2,
+        "y": 1
+      },
+      "wallCount": 4,
+      "action": null
+    },
+    {
+      "stateHash": "946e79b81c5880d7ab733b897b1c622d75ea28c3",
+      "pawn": {
+        "x": 1,
+        "y": 1
+      },
+      "wallCount": 4,
+      "action": null
+    },
+    {
+      "stateHash": "2db13a1a7eb9b9afc517865937cb5c0e0c409a8d",
+      "pawn": {
+        "x": 1,
+        "y": 2
+      },
+      "wallCount": 4,
+      "action": null
+    },
+    {
+      "stateHash": "04e0c13a36ab3140a96e5057b9e05350bd81a8de",
+      "pawn": {
+        "x": 2,
+        "y": 2
+      },
+      "wallCount": 4,
+      "action": null
+    },
+    {
+      "stateHash": "587c9a45464ec736ede9da1b620c690ffac9cf0f",
+      "pawn": {
+        "x": 3,
+        "y": 2
+      },
+      "wallCount": 4,
+      "action": null
+    },
+    {
+      "stateHash": "7780d774991f257b34f13e19953c57760a516b2e",
+      "pawn": {
+        "x": 4,
+        "y": 2
+      },
+      "wallCount": 4,
+      "action": "7,2|7,3"
+    },
+    {
+      "stateHash": "706e214a1c7d3ea275d316489a39f7eca83186f5",
+      "pawn": {
+        "x": 5,
+        "y": 2
+      },
+      "wallCount": 5,
+      "action": "6,2|6,3"
+    },
+    {
+      "stateHash": "69a4f6fb013fc4496624582a2a952026cdb51e46",
+      "pawn": {
+        "x": 6,
+        "y": 2
+      },
+      "wallCount": 6,
+      "action": "7,2|8,2"
+    },
+    {
+      "stateHash": "1975be5b14f71ddefe5efd3a96a0a9d4030b330a",
+      "pawn": {
+        "x": 7,
+        "y": 2
+      },
+      "wallCount": 7,
+      "action": "4,2|4,3"
+    },
+    {
+      "stateHash": "78ba42473dc445d2489d1f891efcaa42e6ec7f12",
+      "pawn": {
+        "x": 7,
+        "y": 1
+      },
+      "wallCount": 8,
+      "action": "7,1|8,1"
+    },
+    {
+      "stateHash": "85d348aac3fe33ba0cad05c23cdedb0689d1cfba",
+      "pawn": {
+        "x": 7,
+        "y": 2
+      },
+      "wallCount": 9,
+      "action": "6,2|7,2"
+    },
+    {
+      "stateHash": "fff4027988c3728232a41c29761d4e5a0e37228c",
+      "pawn": {
+        "x": 7,
+        "y": 1
+      },
+      "wallCount": 10,
+      "action": "5,2|5,3"
+    },
+    {
+      "stateHash": "ba3133d44b24b5e910e1f3068db28df28d39aaa9",
+      "pawn": {
+        "x": 6,
+        "y": 1
+      },
+      "wallCount": 11,
+      "action": "3,2|3,3"
+    },
+    {
+      "stateHash": "1e787c9afec87e98e30fdf3afd202a48218ab6f6",
+      "pawn": {
+        "x": 6,
+        "y": 2
+      },
+      "wallCount": 12,
+      "action": "5,2|6,2"
+    },
+    {
+      "stateHash": "f70496ee4ed8b7c4744dd8faa4c58a920c3c7afe",
+      "pawn": {
+        "x": 6,
+        "y": 1
+      },
+      "wallCount": 13,
+      "action": "2,2|2,3"
+    },
+    {
+      "stateHash": "0908223a6d1bc4da031a5aa57101dde833016271",
+      "pawn": {
+        "x": 5,
+        "y": 1
+      },
+      "wallCount": 14,
+      "action": null
+    },
+    {
+      "stateHash": "d0986aa4143f280cf88501a08bd9c29bd7124ec0",
+      "pawn": {
+        "x": 5,
+        "y": 2
+      },
+      "wallCount": 14,
+      "action": null
+    },
+    {
+      "stateHash": "ca70ba3ec805507a6e8d32af909948ce77e9b38f",
+      "pawn": {
+        "x": 4,
+        "y": 2
+      },
+      "wallCount": 14,
+      "action": null
+    },
+    {
+      "stateHash": "4a32ec0679fb357b89c6c18638121afc8858fef6",
+      "pawn": {
+        "x": 3,
+        "y": 2
+      },
+      "wallCount": 14,
+      "action": null
+    },
+    {
+      "stateHash": "e21af1bc261122709a99b9a7f703c22fbbc46e00",
+      "pawn": {
+        "x": 2,
+        "y": 2
+      },
+      "wallCount": 14,
+      "action": null
+    },
+    {
+      "stateHash": "4e1fcb2a5ef1f7456e61c4213e04792a8167876c",
+      "pawn": {
+        "x": 1,
+        "y": 2
+      },
+      "wallCount": 14,
+      "action": null
+    },
+    {
+      "stateHash": "40480e6ad23030799779778583e5766c26f9fae9",
+      "pawn": {
+        "x": 1,
+        "y": 3
+      },
+      "wallCount": 14,
+      "action": null
+    },
+    {
+      "stateHash": "b2e1c75a8e8510158d2b13732a34f93573d60687",
+      "pawn": {
+        "x": 2,
+        "y": 3
+      },
+      "wallCount": 14,
+      "action": null
+    },
+    {
+      "stateHash": "7fd6a0a04094984cfbb9f2d3d17c03f28e65e116",
+      "pawn": {
+        "x": 3,
+        "y": 3
+      },
+      "wallCount": 14,
+      "action": null
+    },
+    {
+      "stateHash": "075869ff94901f51d5b12eb00e3f51888e237455",
+      "pawn": {
+        "x": 4,
+        "y": 3
+      },
+      "wallCount": 14,
+      "action": null
+    },
+    {
+      "stateHash": "024d684de3f109ceb8effc81da7015a1e8011a3c",
+      "pawn": {
+        "x": 5,
+        "y": 3
+      },
+      "wallCount": 14,
+      "action": null
+    },
+    {
+      "stateHash": "ab57a7912777dd91755ace77d67c890077cc80fd",
+      "pawn": {
+        "x": 6,
+        "y": 3
+      },
+      "wallCount": 14,
+      "action": null
+    },
+    {
+      "stateHash": "391882ef72124f6da88875b6f527e6aeffae965f",
+      "pawn": {
+        "x": 7,
+        "y": 3
+      },
+      "wallCount": 14,
+      "action": "10,9|10,10"
+    },
+    {
+      "stateHash": "dd96b12cf386f53e27529725e64e91af3d47b3ae",
+      "pawn": {
+        "x": 8,
+        "y": 3
+      },
+      "wallCount": 15,
+      "action": "8,9|8,10"
+    },
+    {
+      "stateHash": "aa5db85935212001d3cce37d8b1ef90f02b8d614",
+      "pawn": {
+        "x": 9,
+        "y": 3
+      },
+      "wallCount": 16,
+      "action": "9,8|9,9"
+    },
+    {
+      "stateHash": "10b5c1a8c07bc1b58f6b42e7aa9bd4f1f61d71e6",
+      "pawn": {
+        "x": 10,
+        "y": 3
+      },
+      "wallCount": 17,
+      "action": "9,9|9,10"
+    },
+    {
+      "stateHash": "8930a2d631567924e8870d00228a99607d8f55f0",
+      "pawn": {
+        "x": 10,
+        "y": 4
+      },
+      "wallCount": 18,
+      "action": "7,9|7,10"
+    },
+    {
+      "stateHash": "ba9403766722414e9f0c06280f681f061a693550",
+      "pawn": {
+        "x": 10,
+        "y": 5
+      },
+      "wallCount": 19,
+      "action": "6,9|6,10"
+    },
+    {
+      "stateHash": "2d8ec1abc19caf6bb9f1dee6aadfea136eda863d",
+      "pawn": {
+        "x": 10,
+        "y": 6
+      },
+      "wallCount": 20,
+      "action": "5,9|5,10"
+    },
+    {
+      "stateHash": "f64ea081540b499d86fb0937b30b65bd3209477e",
+      "pawn": {
+        "x": 10,
+        "y": 7
+      },
+      "wallCount": 21,
+      "action": "4,9|4,10"
+    },
+    {
+      "stateHash": "6387b8b79e39275236b37218764febfd80173116",
+      "pawn": {
+        "x": 10,
+        "y": 8
+      },
+      "wallCount": 22,
+      "action": "3,9|3,10"
+    },
+    {
+      "stateHash": "3d95ca425ab36297f33f199a166e3f90c9eeee78",
+      "pawn": {
+        "x": 10,
+        "y": 9
+      },
+      "wallCount": 23,
+      "action": "2,9|2,10"
+    },
+    {
+      "stateHash": "56396ebb17c4ef13cd304ead021ebe1751543da3",
+      "pawn": {
+        "x": 9,
+        "y": 9
+      },
+      "wallCount": 24,
+      "action": "8,9|9,9"
+    },
+    {
+      "stateHash": "97bc4fa595f7924cd0bfa68a224c98c8a78f6f2f",
+      "pawn": {
+        "x": 10,
+        "y": 9
+      },
+      "wallCount": 25,
+      "action": "8,8|9,8"
+    },
+    {
+      "stateHash": "2e41107284f0328f82f998340132af106d0ec1ac",
+      "pawn": {
+        "x": 10,
+        "y": 8
+      },
+      "wallCount": 26,
+      "action": "8,7|9,7"
+    },
+    {
+      "stateHash": "9abc0f24ccd3eeae35b745bed52a11cb552a05a1",
+      "pawn": {
+        "x": 9,
+        "y": 8
+      },
+      "wallCount": 27,
+      "action": "9,7|9,8"
+    },
+    {
+      "stateHash": "1e7adf5060ec09ea4826324a3af388877ec9b46d",
+      "pawn": {
+        "x": 10,
+        "y": 8
+      },
+      "wallCount": 28,
+      "action": "8,6|9,6"
+    },
+    {
+      "stateHash": "b42a5c9db8dcab986fc36f39c698e64e23079125",
+      "pawn": {
+        "x": 10,
+        "y": 7
+      },
+      "wallCount": 29,
+      "action": "8,5|9,5"
+    },
+    {
+      "stateHash": "5d8037f44e6155ba6cd34ec20fc815f75b4b5e73",
+      "pawn": {
+        "x": 9,
+        "y": 7
+      },
+      "wallCount": 30,
+      "action": "9,6|9,7"
+    },
+    {
+      "stateHash": "881fa71849ffbe7122afe3e4a2995b58a94ebe22",
+      "pawn": {
+        "x": 10,
+        "y": 7
+      },
+      "wallCount": 31,
+      "action": "8,4|9,4"
+    },
+    {
+      "stateHash": "9e792b223c8487b3281853271d5f83a7a778993f",
+      "pawn": {
+        "x": 10,
+        "y": 6
+      },
+      "wallCount": 32,
+      "action": "8,3|9,3"
+    },
+    {
+      "stateHash": "20bb462dea0c64d43cb0c14b3b3e17de1e7bae3b",
+      "pawn": {
+        "x": 9,
+        "y": 6
+      },
+      "wallCount": 33,
+      "action": "9,2|9,3"
+    },
+    {
+      "stateHash": "ce0b445c3b63cb949b925c66e90f11828ad53d0a",
+      "pawn": {
+        "x": 10,
+        "y": 6
+      },
+      "wallCount": 34,
+      "action": "10,3|10,4"
+    },
+    {
+      "stateHash": "0fd4632dfc27565d76593dce691237069bab7167",
+      "pawn": {
+        "x": 9,
+        "y": 6
+      },
+      "wallCount": 35,
+      "action": "9,4|9,5"
+    },
+    {
+      "stateHash": "cc35eac53edc59ae4ddc0bda724adee10ccddf10",
+      "pawn": {
+        "x": 10,
+        "y": 6
+      },
+      "wallCount": 36,
+      "action": "10,5|10,6"
+    },
+    {
+      "stateHash": "90266c45f460f7725c0e1cdc32a77d0a00a4e91c",
+      "pawn": {
+        "x": 9,
+        "y": 6
+      },
+      "wallCount": 37,
+      "action": "8,2|9,2"
+    },
+    {
+      "stateHash": "19c71f3fc5a147a8b14cdd4dd9aa10b3a9ae2d03",
+      "pawn": {
+        "x": 9,
+        "y": 5
+      },
+      "wallCount": 38,
+      "action": null
+    },
+    {
+      "stateHash": "20aaf10ad9f1284c6da083f5ed73b10410c6ce8f",
+      "pawn": {
+        "x": 10,
+        "y": 5
+      },
+      "wallCount": 38,
+      "action": null
+    },
+    {
+      "stateHash": "26d0d195825308cd7051be36b0511a07c2d85325",
+      "pawn": {
+        "x": 10,
+        "y": 4
+      },
+      "wallCount": 38,
+      "action": null
+    },
+    {
+      "stateHash": "f78066a0cd698b662b0408cf675b76fd1d99d2c1",
+      "pawn": {
+        "x": 9,
+        "y": 4
+      },
+      "wallCount": 38,
+      "action": null
+    },
+    {
+      "stateHash": "0a88237ea2df2444c604cefe32d209aec675dd96",
+      "pawn": {
+        "x": 9,
+        "y": 3
+      },
+      "wallCount": 38,
+      "action": null
+    },
+    {
+      "stateHash": "90ba756ef56cff57a8540816575678634b97743b",
+      "pawn": {
+        "x": 10,
+        "y": 3
+      },
+      "wallCount": 38,
+      "action": null
+    },
+    {
+      "stateHash": "5f599fb82a6e0737960d8fce4ebb99aa318c107e",
+      "pawn": {
+        "x": 10,
+        "y": 2
+      },
+      "wallCount": 38,
+      "action": null
+    },
+    {
+      "stateHash": "72d7d370cea36004ec43442645bf48b92b7b6f9d",
+      "pawn": {
+        "x": 9,
+        "y": 2
+      },
+      "wallCount": 38,
+      "action": "9,1|9,2"
+    },
+    {
+      "stateHash": "4fdf3aca389ba158a1d8f70e0375b7afc4e523a8",
+      "pawn": {
+        "x": 10,
+        "y": 2
+      },
+      "wallCount": 39,
+      "action": null
+    },
+    {
+      "stateHash": "49436ebd6d9679efe52d1cf501734813cbe5dc55",
+      "pawn": {
+        "x": 10,
+        "y": 1
+      },
+      "wallCount": 39,
+      "action": null
+    },
+    {
+      "stateHash": "0731fbf113362a6506b1538f14e65d73f6c0dcd3",
+      "pawn": {
+        "x": 9,
+        "y": 1
+      },
+      "wallCount": 39,
+      "action": null
+    },
+    {
+      "stateHash": "59c28ae926785e60e0e30f3fbd98953a43f5e416",
+      "pawn": {
+        "x": 8,
+        "y": 1
+      },
+      "wallCount": 39,
+      "action": null
+    },
+    {
+      "stateHash": "29dfe9084623bb2fa689ebaa5f2fe049dfaf1ebd",
+      "pawn": {
+        "x": 8,
+        "y": 2
+      },
+      "wallCount": 39,
+      "action": null
+    },
+    {
+      "stateHash": "04cea2c380451a63df45f31c2d89b37da7f6457a",
+      "pawn": {
+        "x": 8,
+        "y": 3
+      },
+      "wallCount": 39,
+      "action": null
+    },
+    {
+      "stateHash": "061e480273818b130443ee7fd6ca5541cc3cddee",
+      "pawn": {
+        "x": 8,
+        "y": 4
+      },
+      "wallCount": 39,
+      "action": null
+    },
+    {
+      "stateHash": "09df74cba34edc0aa66cc1b87e8c5fed7d3a3f42",
+      "pawn": {
+        "x": 8,
+        "y": 5
+      },
+      "wallCount": 39,
+      "action": null
+    },
+    {
+      "stateHash": "78d782184b42cd1393c2fd075bc8eb7e529e000a",
+      "pawn": {
+        "x": 8,
+        "y": 6
+      },
+      "wallCount": 39,
+      "action": null
+    },
+    {
+      "stateHash": "f63cef3139a54e150d46fff40b16d3fbc8b462ce",
+      "pawn": {
+        "x": 8,
+        "y": 7
+      },
+      "wallCount": 39,
+      "action": null
+    },
+    {
+      "stateHash": "738f772f2ede25ab1f7e9cb637d49dcc0f9a3dc2",
+      "pawn": {
+        "x": 8,
+        "y": 8
+      },
+      "wallCount": 39,
+      "action": null
+    },
+    {
+      "stateHash": "453bbcba27fb35a1f4bc0428a0bcd7076ef8d119",
+      "pawn": {
+        "x": 8,
+        "y": 9
+      },
+      "wallCount": 39,
+      "action": "5,9|6,9"
+    },
+    {
+      "stateHash": "db7f4923784bb3e8f0a90f19e783886b961526f7",
+      "pawn": {
+        "x": 7,
+        "y": 9
+      },
+      "wallCount": 40,
+      "action": "5,8|6,8"
+    },
+    {
+      "stateHash": "69413ac87009399b8d3b32eb2c5ab223bd558809",
+      "pawn": {
+        "x": 6,
+        "y": 9
+      },
+      "wallCount": 41,
+      "action": "6,8|6,9"
+    },
+    {
+      "stateHash": "bbf130e6bb804f9a9b4a9f4c338193c85601b59d",
+      "pawn": {
+        "x": 7,
+        "y": 9
+      },
+      "wallCount": 42,
+      "action": "7,8|7,9"
+    },
+    {
+      "stateHash": "072622d16141bb8c6b89e5af50ed807f10e894b2",
+      "pawn": {
+        "x": 8,
+        "y": 9
+      },
+      "wallCount": 43,
+      "action": "5,7|6,7"
+    },
+    {
+      "stateHash": "cf8188758b800c86587f685508a6c0dfed24b7fd",
+      "pawn": {
+        "x": 8,
+        "y": 8
+      },
+      "wallCount": 44,
+      "action": "5,6|6,6"
+    },
+    {
+      "stateHash": "a2befc78de5faec0fc9bd0a5849aa29d2294a092",
+      "pawn": {
+        "x": 7,
+        "y": 8
+      },
+      "wallCount": 45,
+      "action": "5,5|6,5"
+    },
+    {
+      "stateHash": "e4db248fd5ebf8b1bd1b9c5b558e772f22bf2400",
+      "pawn": {
+        "x": 6,
+        "y": 8
+      },
+      "wallCount": 46,
+      "action": "6,4|6,5"
+    },
+    {
+      "stateHash": "476920cf6fefec44fa33d803d2eab225892278a2",
+      "pawn": {
+        "x": 7,
+        "y": 8
+      },
+      "wallCount": 47,
+      "action": "7,5|7,6"
+    },
+    {
+      "stateHash": "f194b46ba43c6c4a2e3cfa029321050fb3c64109",
+      "pawn": {
+        "x": 8,
+        "y": 8
+      },
+      "wallCount": 48,
+      "action": "8,6|8,7"
+    },
+    {
+      "stateHash": "07455e7ff0588e8ed9b1d49efa9906fd8750b673",
+      "pawn": {
+        "x": 7,
+        "y": 8
+      },
+      "wallCount": 49,
+      "action": "6,4|7,4"
+    },
+    {
+      "stateHash": "a7bc90191962623de77b99121c79169360f92871",
+      "pawn": {
+        "x": 6,
+        "y": 8
+      },
+      "wallCount": 50,
+      "action": "7,4|7,5"
+    },
+    {
+      "stateHash": "5af6412936ac449b2771dc725c6d9a1b2dba3fbb",
+      "pawn": {
+        "x": 7,
+        "y": 8
+      },
+      "wallCount": 51,
+      "action": "7,7|7,8"
+    },
+    {
+      "stateHash": "eaa155aa7ebdc9937dd4f9d66b52dc4f96cc4336",
+      "pawn": {
+        "x": 8,
+        "y": 8
+      },
+      "wallCount": 52,
+      "action": "8,5|8,6"
+    },
+    {
+      "stateHash": "cd3c02ce539e593f9c4240f0ce13ac4f37505391",
+      "pawn": {
+        "x": 7,
+        "y": 8
+      },
+      "wallCount": 53,
+      "action": "6,6|6,7"
+    },
+    {
+      "stateHash": "22e614820a0c31d04900bf5c47cbd2258435fdc6",
+      "pawn": {
+        "x": 8,
+        "y": 8
+      },
+      "wallCount": 54,
+      "action": null
+    },
+    {
+      "stateHash": "6f4294c599be97142d07f4aeefa9180526611161",
+      "pawn": {
+        "x": 8,
+        "y": 7
+      },
+      "wallCount": 54,
+      "action": "7,7|8,7"
+    },
+    {
+      "stateHash": "04318649de51814c21e3ca3ac142b682d58a0fad",
+      "pawn": {
+        "x": 8,
+        "y": 8
+      },
+      "wallCount": 55,
+      "action": null
+    },
+    {
+      "stateHash": "7daf4a255b2c3d24766c5f709bc644b3806d4099",
+      "pawn": {
+        "x": 7,
+        "y": 8
+      },
+      "wallCount": 55,
+      "action": null
+    },
+    {
+      "stateHash": "c9cb606a8f7d7863899485013a01fdcd23b3a81d",
+      "pawn": {
+        "x": 6,
+        "y": 8
+      },
+      "wallCount": 55,
+      "action": null
+    },
+    {
+      "stateHash": "43957f4cd81a7579a80813ee79cbd6cdcc1ce417",
+      "pawn": {
+        "x": 6,
+        "y": 7
+      },
+      "wallCount": 55,
+      "action": null
+    },
+    {
+      "stateHash": "700d2b35a495c9d82838f79c0ba6ae57e067044b",
+      "pawn": {
+        "x": 7,
+        "y": 7
+      },
+      "wallCount": 55,
+      "action": null
+    },
+    {
+      "stateHash": "ff610bfbdf051d416c6335467175534126e0b76c",
+      "pawn": {
+        "x": 7,
+        "y": 6
+      },
+      "wallCount": 55,
+      "action": null
+    },
+    {
+      "stateHash": "f47d96e3cc3824bd30a9c8aa5167ec5bac001ef1",
+      "pawn": {
+        "x": 6,
+        "y": 6
+      },
+      "wallCount": 55,
+      "action": null
+    },
+    {
+      "stateHash": "a012ced5288910aa5d01742007f166fbeb5876b0",
+      "pawn": {
+        "x": 6,
+        "y": 5
+      },
+      "wallCount": 55,
+      "action": null
+    },
+    {
+      "stateHash": "aa91c7718440f829d56ef1848ce2f9b05d99c17c",
+      "pawn": {
+        "x": 7,
+        "y": 5
+      },
+      "wallCount": 55,
+      "action": null
+    },
+    {
+      "stateHash": "1df6f60418a498a74993b7ba74091d7e7ac23eb8",
+      "pawn": {
+        "x": 8,
+        "y": 5
+      },
+      "wallCount": 55,
+      "action": null
+    },
+    {
+      "stateHash": "3ad9e6b428ac0b18e5544bd0f4e3ef17e4cde257",
+      "pawn": {
+        "x": 8,
+        "y": 4
+      },
+      "wallCount": 55,
+      "action": null
+    },
+    {
+      "stateHash": "942ee8c83f9e1c89c14a02faf82072e82f7ee7d0",
+      "pawn": {
+        "x": 7,
+        "y": 4
+      },
+      "wallCount": 55,
+      "action": "7,3|7,4"
+    },
+    {
+      "stateHash": "2a10ca9df70caae599b3b535cb4c59911e9a48a9",
+      "pawn": {
+        "x": 8,
+        "y": 4
+      },
+      "wallCount": 56,
+      "action": null
+    },
+    {
+      "stateHash": "b714136b8185efef3a49dd8cd32ec3a39f3f12e4",
+      "pawn": {
+        "x": 8,
+        "y": 3
+      },
+      "wallCount": 56,
+      "action": null
+    },
+    {
+      "stateHash": "bd79ff4db392d01c77eb8bed4e51cb1345573896",
+      "pawn": {
+        "x": 7,
+        "y": 3
+      },
+      "wallCount": 56,
+      "action": null
+    },
+    {
+      "stateHash": "27a9f7aefad35a8498dc3ede32b2f78c9e1e5fac",
+      "pawn": {
+        "x": 6,
+        "y": 3
+      },
+      "wallCount": 56,
+      "action": null
+    },
+    {
+      "stateHash": "891069362a08008e699b298e067fba5f473fd792",
+      "pawn": {
+        "x": 6,
+        "y": 4
+      },
+      "wallCount": 56,
+      "action": "5,4|6,4"
+    },
+    {
+      "stateHash": "c3a13470a1db678f75a8c96b019b9ee33f84517b",
+      "pawn": {
+        "x": 6,
+        "y": 3
+      },
+      "wallCount": 57,
+      "action": null
+    },
+    {
+      "stateHash": "4fd87bf5bfa41cf5181bf3d82931db430d678c68",
+      "pawn": {
+        "x": 5,
+        "y": 3
+      },
+      "wallCount": 57,
+      "action": null
+    },
+    {
+      "stateHash": "ecfcfe56244a49b633a54952d0b53f5639609240",
+      "pawn": {
+        "x": 5,
+        "y": 4
+      },
+      "wallCount": 57,
+      "action": null
+    },
+    {
+      "stateHash": "3c700e4969f02a153a46a78f57f7975aaa676a4a",
+      "pawn": {
+        "x": 5,
+        "y": 5
+      },
+      "wallCount": 57,
+      "action": null
+    },
+    {
+      "stateHash": "f5729468d2ef5f62c0359933736a72fabe3e938f",
+      "pawn": {
+        "x": 5,
+        "y": 6
+      },
+      "wallCount": 57,
+      "action": null
+    },
+    {
+      "stateHash": "98e758300e4158ff6cdd2cee88137966466cde2e",
+      "pawn": {
+        "x": 5,
+        "y": 7
+      },
+      "wallCount": 57,
+      "action": null
+    },
+    {
+      "stateHash": "24e61e3def4b93ab2a53c23ec03e9bc00c7e362b",
+      "pawn": {
+        "x": 5,
+        "y": 8
+      },
+      "wallCount": 57,
+      "action": "4,8|4,9"
+    },
+    {
+      "stateHash": "66ab11ec227ffc82a49b8b8fa8c019037b5bbff5",
+      "pawn": {
+        "x": 5,
+        "y": 9
+      },
+      "wallCount": 58,
+      "action": "2,9|3,9"
+    },
+    {
+      "stateHash": "2b77f61e01fa2065733bedbd125a734be4c0f9cd",
+      "pawn": {
+        "x": 4,
+        "y": 9
+      },
+      "wallCount": 59,
+      "action": "2,8|3,8"
+    },
+    {
+      "stateHash": "b7c7d01c33a931c0d2b10727cb50d670da5dcd74",
+      "pawn": {
+        "x": 3,
+        "y": 9
+      },
+      "wallCount": 60,
+      "action": "3,8|3,9"
+    },
+    {
+      "stateHash": "697f8a65ef411c261eb378425209aef7c66b6a08",
+      "pawn": {
+        "x": 4,
+        "y": 9
+      },
+      "wallCount": 61,
+      "action": "2,7|3,7"
+    },
+    {
+      "stateHash": "daacb3f7c23299635ff9cd6b44d9a103cb505589",
+      "pawn": {
+        "x": 5,
+        "y": 9
+      },
+      "wallCount": 62,
+      "action": "2,6|3,6"
+    },
+    {
+      "stateHash": "d6226c09b5a7a630945278fdd18b3731c6ba66d1",
+      "pawn": {
+        "x": 5,
+        "y": 8
+      },
+      "wallCount": 63,
+      "action": "2,5|3,5"
+    },
+    {
+      "stateHash": "58ff651b0c4f0698aa367053487a2568648186b0",
+      "pawn": {
+        "x": 4,
+        "y": 8
+      },
+      "wallCount": 64,
+      "action": "2,4|3,4"
+    },
+    {
+      "stateHash": "b1d3d592a5f4df8a1cfa8fe4628ecac0263f604c",
+      "pawn": {
+        "x": 3,
+        "y": 8
+      },
+      "wallCount": 65,
+      "action": "3,3|3,4"
+    },
+    {
+      "stateHash": "8a306137f3f2af57d011160de6e1a17aafc15866",
+      "pawn": {
+        "x": 4,
+        "y": 8
+      },
+      "wallCount": 66,
+      "action": "4,4|4,5"
+    },
+    {
+      "stateHash": "a63097fd2b9728972743d7d9f392175391d21dbf",
+      "pawn": {
+        "x": 5,
+        "y": 8
+      },
+      "wallCount": 67,
+      "action": "5,4|5,5"
+    },
+    {
+      "stateHash": "63a394965640f11aa312b6082888a505c8bd15cf",
+      "pawn": {
+        "x": 4,
+        "y": 8
+      },
+      "wallCount": 68,
+      "action": "4,3|4,4"
+    },
+    {
+      "stateHash": "5d49f2d7d50cc3c28c0f23f1bf78991cf9afd733",
+      "pawn": {
+        "x": 3,
+        "y": 8
+      },
+      "wallCount": 69,
+      "action": "3,5|3,6"
+    },
+    {
+      "stateHash": "2c85cf667eb6326e8e3c4a3787439ddf94cfe78a",
+      "pawn": {
+        "x": 4,
+        "y": 8
+      },
+      "wallCount": 70,
+      "action": "4,5|4,6"
+    },
+    {
+      "stateHash": "31db412099ba40ccfe0571f010d8b4498ad89955",
+      "pawn": {
+        "x": 5,
+        "y": 8
+      },
+      "wallCount": 71,
+      "action": "5,6|5,7"
+    },
+    {
+      "stateHash": "113f64d044ce22a6ff3ab7bf5b8f0cd7a7539859",
+      "pawn": {
+        "x": 4,
+        "y": 8
+      },
+      "wallCount": 72,
+      "action": "4,7|4,8"
+    },
+    {
+      "stateHash": "cea528a4978568112afb819c4dbda81c16ddc726",
+      "pawn": {
+        "x": 5,
+        "y": 8
+      },
+      "wallCount": 73,
+      "action": "4,6|4,7"
+    },
+    {
+      "stateHash": "6c2d40544f81dcea2299a394195a3f610f269c89",
+      "pawn": {
+        "x": 4,
+        "y": 8
+      },
+      "wallCount": 74,
+      "action": null
+    },
+    {
+      "stateHash": "915f172ba6a172ee462541d79248576938081bab",
+      "pawn": {
+        "x": 3,
+        "y": 8
+      },
+      "wallCount": 74,
+      "action": "3,7|3,8"
+    },
+    {
+      "stateHash": "30747a4b3bc2a775b1113a974a1e9d7776e8fea5",
+      "pawn": {
+        "x": 4,
+        "y": 8
+      },
+      "wallCount": 75,
+      "action": "1,8|1,9"
+    },
+    {
+      "stateHash": "169b2ea5b6b8cd1db34d6a91efd3c40a098f1110",
+      "pawn": {
+        "x": 5,
+        "y": 8
+      },
+      "wallCount": 76,
+      "action": "2,6|2,7"
+    },
+    {
+      "stateHash": "32b2896b89ad0a719bdce47799aed59d83751d1d",
+      "pawn": {
+        "x": 5,
+        "y": 7
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "047ab3710a95841f622384576216da2a1a1cc60c",
+      "pawn": {
+        "x": 4,
+        "y": 7
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "db57ec91ecea5ed109dd7ab6de85ab04af376f31",
+      "pawn": {
+        "x": 3,
+        "y": 7
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "f9e9836d2d5f12f5ff05c5d7229296151294af53",
+      "pawn": {
+        "x": 3,
+        "y": 6
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "36f5f13e37ee0dc0011adb8eaf20b72d7cd85eaf",
+      "pawn": {
+        "x": 4,
+        "y": 6
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "c022525613e88b6033e02113b8567ce7d7b34e47",
+      "pawn": {
+        "x": 5,
+        "y": 6
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "0d0efdb331bb32eab00bf4eafc58eb0a2a50dbb1",
+      "pawn": {
+        "x": 5,
+        "y": 5
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "4d124e6632636e248a8b336e1ca350eed0c2245c",
+      "pawn": {
+        "x": 4,
+        "y": 5
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "7203c82337160de53e343311dd96373640f48d48",
+      "pawn": {
+        "x": 3,
+        "y": 5
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "2a99b5bdb7012a73e22a156c6653e388b23f0c8f",
+      "pawn": {
+        "x": 3,
+        "y": 4
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "b2738e3535033ec17eec0ce0f8f30b207ac785b5",
+      "pawn": {
+        "x": 4,
+        "y": 4
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "d64ed9d3bd1e946a1d5d9b4f5f4207c91e82c9f9",
+      "pawn": {
+        "x": 5,
+        "y": 4
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "5974b720871a5a34585ab6c82e8c90649246136b",
+      "pawn": {
+        "x": 5,
+        "y": 3
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "9d0577ad7ed0de5cfa4f4892060198a0c2c258b5",
+      "pawn": {
+        "x": 4,
+        "y": 3
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "6c01550dc6b0374da834029c1eb4e6083c9827dd",
+      "pawn": {
+        "x": 3,
+        "y": 3
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "69f93278b44f6b4e4b3e39910c7e768092382bbf",
+      "pawn": {
+        "x": 2,
+        "y": 3
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "5b73e2da2688d6f4716c4a645335a9baa8d5a19f",
+      "pawn": {
+        "x": 2,
+        "y": 4
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "9d02c3e354d4beddde6b8caa2572e12649dee0e4",
+      "pawn": {
+        "x": 2,
+        "y": 5
+      },
+      "wallCount": 77,
+      "action": null
+    },
+    {
+      "stateHash": "8811818764d589c366a5255b7b91a6f64a0c7121",
+      "pawn": {
+        "x": 2,
+        "y": 6
+      },
+      "wallCount": 77,
+      "action": "1,6|2,6"
+    },
+    {
+      "stateHash": "4340a0d31254daae2b1cb8a53b8a47670ed3db03",
+      "pawn": {
+        "x": 2,
+        "y": 5
+      },
+      "wallCount": 78,
+      "action": "1,5|2,5"
+    },
+    {
+      "stateHash": "102b226e759e4afcdf9a9bb6829de08c5387f975",
+      "pawn": {
+        "x": 2,
+        "y": 4
+      },
+      "wallCount": 79,
+      "action": "1,4|2,4"
+    },
+    {
+      "stateHash": "98397672b9d50a93f3b3aa6ed91ea01dcdea9e6d",
+      "pawn": {
+        "x": 2,
+        "y": 3
+      },
+      "wallCount": 80,
+      "action": null
+    },
+    {
+      "stateHash": "510d2dac433a8f7b6c503306eb49b71592642c10",
+      "pawn": {
+        "x": 1,
+        "y": 3
+      },
+      "wallCount": 80,
+      "action": null
+    },
+    {
+      "stateHash": "8048741fba710ab17500784e6315328e029d61c0",
+      "pawn": {
+        "x": 1,
+        "y": 4
+      },
+      "wallCount": 80,
+      "action": null
+    },
+    {
+      "stateHash": "4fbef81635a578e3b90a6e21c3ce04174aefd2a3",
+      "pawn": {
+        "x": 1,
+        "y": 5
+      },
+      "wallCount": 80,
+      "action": null
+    },
+    {
+      "stateHash": "8874b6f7b301235ca3dbe04d10c115b93b4f139f",
+      "pawn": {
+        "x": 1,
+        "y": 6
+      },
+      "wallCount": 80,
+      "action": null
+    },
+    {
+      "stateHash": "25d7774c424b1ca2a0c5bc4b8dddc7b3625e60b2",
+      "pawn": {
+        "x": 1,
+        "y": 7
+      },
+      "wallCount": 80,
+      "action": null
+    },
+    {
+      "stateHash": "8177a4f401f865547e788f1d2af6d59bd26b47de",
+      "pawn": {
+        "x": 2,
+        "y": 7
+      },
+      "wallCount": 80,
+      "action": "2,7|2,8"
+    }
+  ],
+  "evaluation": {
+    "deterministic_app_tiebreak": {
+      "score": 178,
+      "reached_goal": true,
+      "wall_count": 95,
+      "fallback_count": 14
+    },
+    "random_tiebreak_200_runs": {
+      "min_score": 66,
+      "max_score": 122,
+      "avg_score": 106.35,
+      "avg_fallback_turns": 100.985
+    }
+  }
+}
